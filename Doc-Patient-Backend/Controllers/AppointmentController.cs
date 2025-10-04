@@ -10,10 +10,9 @@ namespace Doc_Patient_Backend.Controllers
     [EnableCors("AllowAngularApp")] // Make sure this matches your CORS policy in Program.cs
     public class AppointmentController : ControllerBase
     {
-        private readonly AppointmentDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        // ✅ Constructor must match controller name
-        public AppointmentController(AppointmentDbContext context)
+        public AppointmentController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -57,39 +56,21 @@ namespace Doc_Patient_Backend.Controllers
             return Ok(list);
         }
 
-        // GET: api/Appointment/ChangeStatus?appointmentId=1
-        [HttpGet("ChangeStatus")]
-        public IActionResult ChangeStatus(int appointmentId)
+        // PUT: api/Appointment/{appointmentId}/status
+        [HttpPut("{appointmentId}/status")]
+        public IActionResult ChangeStatus(int appointmentId, [FromBody] bool isDone)
         {
             var appointment = _context.Appointments.SingleOrDefault(a => a.appointmentId == appointmentId);
 
             if (appointment == null)
-                return NotFound("Appointment not found");
+            {
+                return NotFound(new { message = "Appointment not found" });
+            }
 
-            appointment.isDone = true;
+            appointment.isDone = isDone;
             _context.SaveChanges();
 
-            return Ok("Status Changed Successfully");
-        }
-
-        // GET: api/Appointment/getPatientByMobileNo?mobile=1234567890
-        [HttpGet("getPatientByMobileNo")]
-        public IActionResult GetPatientByMobileNo(string mobile)
-        {
-            var patient = _context.Patients.SingleOrDefault(p => p.mobileNo == mobile);
-
-            if (patient == null)
-                return NotFound("Patient not found");
-
-            return Ok(patient);
-        }
-
-        // GET: api/Appointment/GetAllPatient
-        [HttpGet("GetAllPatient")]
-        public IActionResult GetAllPatient()
-        {
-            var list = _context.Patients.ToList();
-            return Ok(list);
+            return Ok(new { message = "Status Changed Successfully" });
         }
 
         // POST: api/Appointment/CreateNewAppointment
