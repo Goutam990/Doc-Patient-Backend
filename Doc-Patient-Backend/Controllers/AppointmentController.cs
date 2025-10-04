@@ -1,4 +1,5 @@
 ﻿using Doc_Patient_Backend.Models;
+using Doc_Patient_Backend.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
