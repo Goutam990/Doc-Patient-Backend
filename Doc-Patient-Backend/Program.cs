@@ -21,12 +21,9 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add DbContexts
-builder.Services.AddDbContext<EnquiryDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EnquiryCon")));
-
-builder.Services.AddDbContext<AppointmentDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AppointmentCon")));
+// Add DbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
