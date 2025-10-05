@@ -1,106 +1,85 @@
-﻿using Doc_Patient_Backend.Models;
+using Doc_Patient_Backend.Models;
+using Doc_Patient_Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Doc_Patient_Backend.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class EnquiryMasterController : ControllerBase
+    public class EnquiryMasterController(IEnquiryService enquiryService) : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-
-        public EnquiryMasterController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
         // GET: api/EnquiryMaster/statuses
         [HttpGet("statuses")]
-        public ActionResult<List<EnquiryStatus>> GetEnquiryStatuses()
+        public async Task<IActionResult> GetEnquiryStatuses()
         {
-            var list = _context.EnquiryStatuses.ToList();
+            var list = await enquiryService.GetEnquiryStatusesAsync();
             return Ok(list);
         }
 
         // GET: api/EnquiryMaster/types
         [HttpGet("types")]
-        public ActionResult<List<EnquiryType>> GetAllTypes()
+        public async Task<IActionResult> GetAllTypes()
         {
-            var list = _context.EnquiryTypes.ToList();
+            var list = await enquiryService.GetAllTypesAsync();
             return Ok(list);
         }
 
         // GET: api/EnquiryMaster
         [HttpGet]
-        public ActionResult<List<EnquiryModel>> GetAllEnquiry()
+        public async Task<IActionResult> GetAllEnquiry()
         {
-            var list = _context.EnquiryModels.ToList();
+            var list = await enquiryService.GetAllEnquiriesAsync();
             return Ok(list);
         }
 
         // GET: api/EnquiryMaster/5
         [HttpGet("{id}")]
-        public ActionResult<EnquiryModel> GetEnquiryById(int id)
+        public async Task<IActionResult> GetEnquiryById(int id)
         {
-            var enquiry = _context.EnquiryModels.Find(id);
-
+            var enquiry = await enquiryService.GetEnquiryByIdAsync(id);
             if (enquiry == null)
             {
                 return NotFound(new { message = "Enquiry not found" });
             }
-
             return Ok(enquiry);
         }
 
         // POST: api/EnquiryMaster
         [HttpPost]
-        public ActionResult<EnquiryModel> AddNewEnquiry([FromBody] EnquiryModel obj)
+        public async Task<IActionResult> AddNewEnquiry([FromBody] EnquiryModel obj)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
-            obj.createdAt = DateTime.Now;
-            _context.EnquiryModels.Add(obj);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(GetEnquiryById), new { id = obj.enquiryId }, obj);
+            var createdEnquiry = await enquiryService.AddNewEnquiryAsync(obj);
+            return CreatedAtAction(nameof(GetEnquiryById), new { id = createdEnquiry.enquiryId }, createdEnquiry);
         }
 
         // PUT: api/EnquiryMaster/5
         [HttpPut("{id}")]
-        public IActionResult UpdateEnquiry(int id, [FromBody] EnquiryModel obj)
+        public async Task<IActionResult> UpdateEnquiry(int id, [FromBody] EnquiryModel obj)
         {
-            var record = _context.EnquiryModels.SingleOrDefault(m => m.enquiryId == id);
-            if (record == null)
+            var result = await enquiryService.UpdateEnquiryAsync(id, obj);
+            if (!result)
             {
                 return NotFound(new { message = "Enquiry not found" });
             }
-
-            record.resolution = obj.resolution;
-            record.enquiryStatusId = obj.enquiryStatusId;
-            _context.SaveChanges();
-
             return Ok(new { message = "Enquiry updated successfully" });
         }
 
         // DELETE: api/EnquiryMaster/5
         [HttpDelete("{id}")]
-        public IActionResult DeleteEnquiryById(int id)
+        public async Task<IActionResult> DeleteEnquiryById(int id)
         {
-            var record = _context.EnquiryModels.SingleOrDefault(m => m.enquiryId == id);
-            if (record == null)
+            var result = await enquiryService.DeleteEnquiryAsync(id);
+            if (!result)
             {
                 return NotFound(new { message = "Enquiry not found" });
             }
-
-            _context.EnquiryModels.Remove(record);
-            _context.SaveChanges();
             return Ok(new { message = "Deleted successfully" });
         }
     }
