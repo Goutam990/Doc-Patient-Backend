@@ -24,7 +24,7 @@ namespace Doc_Patient_Backend.Controllers
         {
             var userExists = await userManager.FindByEmailAsync(model.Email);
             if (userExists != null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User already exists!" });
+                return StatusCode(StatusCodes.Status409Conflict, new { Status = "Error", Message = "User with this email already exists." });
 
             ApplicationUser user = new()
             {
@@ -35,7 +35,6 @@ namespace Doc_Patient_Backend.Controllers
                 PhoneNumber = model.PhoneNumber,
                 DOB = model.DOB,
                 Gender = model.Gender,
-                Role = UserRoles.Patient,
                 SecurityStamp = Guid.NewGuid().ToString()
             };
             var result = await userManager.CreateAsync(user, model.Password);
@@ -45,7 +44,7 @@ namespace Doc_Patient_Backend.Controllers
             await userManager.AddToRoleAsync(user, UserRoles.Patient);
 
             var token = GenerateJwtToken(user, new List<string> { UserRoles.Patient });
-            var userDto = new UserDto { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName, Email = user.Email, Role = user.Role };
+            var userDto = new UserDto { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName, Email = user.Email, Role = UserRoles.Patient };
 
             return Ok(new LoginResponseDto { Token = token, User = userDto });
         }
@@ -64,7 +63,7 @@ namespace Doc_Patient_Backend.Controllers
 
                 var userRoles = await userManager.GetRolesAsync(user);
                 var token = GenerateJwtToken(user, (List<string>)userRoles);
-                var userDto = new UserDto { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName, Email = user.Email, Role = user.Role };
+                var userDto = new UserDto { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName, Email = user.Email, Role = userRoles.FirstOrDefault() };
 
                 return Ok(new LoginResponseDto { Token = token, User = userDto });
             }
@@ -90,7 +89,7 @@ namespace Doc_Patient_Backend.Controllers
                 user.PhoneNumber,
                 user.DOB,
                 user.Gender,
-                user.Role
+                Role = (await userManager.GetRolesAsync(user)).FirstOrDefault()
             });
         }
 
