@@ -26,14 +26,14 @@ namespace Doc_Patient_Backend.Controllers
         {
             var list = (from appointment in _context.Appointments
                         join patient in _context.Patients
-                        on appointment.patientId equals patient.patientId
+                        on appointment.PatientId equals patient.PatientId
                         select new
                         {
-                            patientName = patient.patientName,
-                            mobileNo = patient.mobileNo,
-                            city = patient.city,
-                            appointmentDate = appointment.appointmentDate,
-                            isDone = appointment.isDone
+                            patientName = patient.PatientName,
+                            mobileNo = patient.MobileNo,
+                            city = patient.City,
+                            appointmentDate = appointment.AppointmentDate,
+                            isDone = appointment.IsDone
                         }).ToList();
 
             return Ok(list);
@@ -44,16 +44,16 @@ namespace Doc_Patient_Backend.Controllers
         public IActionResult GetDoneAppointment()
         {
             var list = (from appointment in _context.Appointments
-                        where appointment.isDone
+                        where appointment.IsDone
                         join patient in _context.Patients
-                        on appointment.patientId equals patient.patientId
+                        on appointment.PatientId equals patient.PatientId
                         select new
                         {
-                            patientName = patient.patientName,
-                            mobileNo = patient.mobileNo,
-                            city = patient.city,
-                            appointmentDate = appointment.appointmentDate,
-                            isDone = appointment.isDone
+                            patientName = patient.PatientName,
+                            mobileNo = patient.MobileNo,
+                            city = patient.City,
+                            appointmentDate = appointment.AppointmentDate,
+                            isDone = appointment.IsDone
                         }).ToList();
 
             return Ok(list);
@@ -63,14 +63,14 @@ namespace Doc_Patient_Backend.Controllers
         [HttpPut("{appointmentId}/status")]
         public IActionResult ChangeStatus(int appointmentId, [FromBody] bool isDone)
         {
-            var appointment = _context.Appointments.SingleOrDefault(a => a.appointmentId == appointmentId);
+            var appointment = _context.Appointments.SingleOrDefault(a => a.AppointmentId == appointmentId);
 
             if (appointment == null)
             {
                 return NotFound(new { message = "Appointment not found" });
             }
 
-            appointment.isDone = isDone;
+            appointment.IsDone = isDone;
             _context.SaveChanges();
 
             return Ok(new { message = "Status Changed Successfully" });
@@ -81,18 +81,18 @@ namespace Doc_Patient_Backend.Controllers
         public IActionResult CreateNewAppointment(NewAppointment obj)
         {
             // Check if patient already exists
-            var existingPatient = _context.Patients.SingleOrDefault(p => p.mobileNo == obj.mobileNo);
+            var existingPatient = _context.Patients.SingleOrDefault(p => p.MobileNo == obj.MobileNo);
 
             if (existingPatient == null)
             {
                 // Create new patient
                 var newPatient = new Patient
                 {
-                    patientName = obj.patientName,
-                    email = obj.email,
-                    mobileNo = obj.mobileNo,
-                    city = obj.city,
-                    address = obj.address
+                    PatientName = obj.PatientName,
+                    Email = obj.Email,
+                    MobileNo = obj.MobileNo,
+                    City = obj.City,
+                    Address = obj.Address
                 };
 
                 _context.Patients.Add(newPatient);
@@ -103,9 +103,9 @@ namespace Doc_Patient_Backend.Controllers
             // Create new appointment
             var newAppointment = new Appointment
             {
-                patientId = existingPatient.patientId,
-                appointmentDate = obj.appointmentDate,
-                isDone = false
+                PatientId = existingPatient.PatientId,
+                AppointmentDate = obj.AppointmentDate,
+                IsDone = false
             };
 
             _context.Appointments.Add(newAppointment);
