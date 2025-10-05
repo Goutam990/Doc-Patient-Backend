@@ -11,6 +11,23 @@ namespace Doc_Patient_Backend.Models
         public DbSet<EnquiryModel> EnquiryModels { get; set; }
         public DbSet<EnquiryStatus> EnquiryStatuses { get; set; }
         public DbSet<EnquiryType> EnquiryTypes { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<Appointment>()
+                .HasOne(a => a.Patient)
+                .WithMany()
+                .HasForeignKey(a => a.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Appointment>()
+                .HasOne(a => a.Doctor)
+                .WithMany()
+                .HasForeignKey(a => a.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 
     [Table("Appointments")]
