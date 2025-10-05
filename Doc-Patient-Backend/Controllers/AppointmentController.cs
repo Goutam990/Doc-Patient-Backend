@@ -11,21 +11,15 @@ namespace Doc_Patient_Backend.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("AllowAngularApp")] // Make sure this matches your CORS policy in Program.cs
-    public class AppointmentController : ControllerBase
+    public class AppointmentController(ApplicationDbContext context) : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-
-        public AppointmentController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
 
         // GET: api/Appointment/GetAllAppointment
         [HttpGet("GetAllAppointment")]
         public IActionResult GetAllAppointment()
         {
-            var list = (from appointment in _context.Appointments
-                        join patient in _context.Patients
+            var list = (from appointment in context.Appointments
+                        join patient in context.Patients
                         on appointment.PatientId equals patient.PatientId
                         select new
                         {
@@ -43,9 +37,9 @@ namespace Doc_Patient_Backend.Controllers
         [HttpGet("GetDoneAppointment")]
         public IActionResult GetDoneAppointment()
         {
-            var list = (from appointment in _context.Appointments
+            var list = (from appointment in context.Appointments
                         where appointment.IsDone
-                        join patient in _context.Patients
+                        join patient in context.Patients
                         on appointment.PatientId equals patient.PatientId
                         select new
                         {
@@ -63,7 +57,7 @@ namespace Doc_Patient_Backend.Controllers
         [HttpPut("{appointmentId}/status")]
         public IActionResult ChangeStatus(int appointmentId, [FromBody] bool isDone)
         {
-            var appointment = _context.Appointments.SingleOrDefault(a => a.AppointmentId == appointmentId);
+            var appointment = context.Appointments.SingleOrDefault(a => a.AppointmentId == appointmentId);
 
             if (appointment == null)
             {
@@ -71,7 +65,7 @@ namespace Doc_Patient_Backend.Controllers
             }
 
             appointment.IsDone = isDone;
-            _context.SaveChanges();
+            context.SaveChanges();
 
             return Ok(new { message = "Status Changed Successfully" });
         }
@@ -81,7 +75,7 @@ namespace Doc_Patient_Backend.Controllers
         public IActionResult CreateNewAppointment(NewAppointment obj)
         {
             // Check if patient already exists
-            var existingPatient = _context.Patients.SingleOrDefault(p => p.MobileNo == obj.MobileNo);
+            var existingPatient = context.Patients.SingleOrDefault(p => p.MobileNo == obj.MobileNo);
 
             if (existingPatient == null)
             {
@@ -95,8 +89,8 @@ namespace Doc_Patient_Backend.Controllers
                     Address = obj.Address
                 };
 
-                _context.Patients.Add(newPatient);
-                _context.SaveChanges();
+                context.Patients.Add(newPatient);
+                context.SaveChanges();
                 existingPatient = newPatient;
             }
 
@@ -108,8 +102,8 @@ namespace Doc_Patient_Backend.Controllers
                 IsDone = false
             };
 
-            _context.Appointments.Add(newAppointment);
-            _context.SaveChanges();
+            context.Appointments.Add(newAppointment);
+            context.SaveChanges();
 
             return Created("Appointment Created", obj);
         }

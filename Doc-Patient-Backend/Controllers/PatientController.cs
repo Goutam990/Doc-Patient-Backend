@@ -8,20 +8,14 @@ namespace Doc_Patient_Backend.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class PatientController : ControllerBase
+    public class PatientController(ApplicationDbContext context) : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-
-        public PatientController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
 
         // GET: api/Patient
         [HttpGet]
         public IActionResult GetAllPatients()
         {
-            var patients = _context.Patients.ToList();
+            var patients = context.Patients.ToList();
             return Ok(patients);
         }
 
@@ -29,7 +23,7 @@ namespace Doc_Patient_Backend.Controllers
         [HttpGet("{id}")]
         public IActionResult GetPatientById(int id)
         {
-            var patient = _context.Patients.Find(id);
+            var patient = context.Patients.Find(id);
 
             if (patient == null)
             {
@@ -43,7 +37,7 @@ namespace Doc_Patient_Backend.Controllers
         [HttpGet("mobile/{mobile}")]
         public IActionResult GetPatientByMobileNo(string mobile)
         {
-            var patient = _context.Patients.SingleOrDefault(p => p.MobileNo == mobile);
+            var patient = context.Patients.SingleOrDefault(p => p.MobileNo == mobile);
 
             if (patient == null)
             {
@@ -62,8 +56,8 @@ namespace Doc_Patient_Backend.Controllers
                 return BadRequest(ModelState);
             }
 
-            _context.Patients.Add(patient);
-            _context.SaveChanges();
+            context.Patients.Add(patient);
+            context.SaveChanges();
 
             return CreatedAtAction(nameof(GetPatientById), new { id = patient.PatientId }, patient);
         }
@@ -72,7 +66,7 @@ namespace Doc_Patient_Backend.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdatePatient(int id, [FromBody] Patient updatedPatient)
         {
-            var patient = _context.Patients.Find(id);
+            var patient = context.Patients.Find(id);
 
             if (patient == null)
             {
@@ -85,7 +79,7 @@ namespace Doc_Patient_Backend.Controllers
             patient.City = updatedPatient.City;
             patient.Address = updatedPatient.Address;
 
-            _context.SaveChanges();
+            context.SaveChanges();
 
             return Ok(new { message = "Patient updated successfully" });
         }
@@ -94,15 +88,15 @@ namespace Doc_Patient_Backend.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeletePatient(int id)
         {
-            var patient = _context.Patients.Find(id);
+            var patient = context.Patients.Find(id);
 
             if (patient == null)
             {
                 return NotFound(new { message = "Patient not found" });
             }
 
-            _context.Patients.Remove(patient);
-            _context.SaveChanges();
+            context.Patients.Remove(patient);
+            context.SaveChanges();
 
             return Ok(new { message = "Patient deleted successfully" });
         }

@@ -10,20 +10,14 @@ namespace Doc_Patient_Backend.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class EnquiryMasterController : ControllerBase
+    public class EnquiryMasterController(ApplicationDbContext context) : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-
-        public EnquiryMasterController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
 
         // GET: api/EnquiryMaster/statuses
         [HttpGet("statuses")]
         public ActionResult<List<EnquiryStatus>> GetEnquiryStatuses()
         {
-            var list = _context.EnquiryStatuses.ToList();
+            var list = context.EnquiryStatuses.ToList();
             return Ok(list);
         }
 
@@ -31,7 +25,7 @@ namespace Doc_Patient_Backend.Controllers
         [HttpGet("types")]
         public ActionResult<List<EnquiryType>> GetAllTypes()
         {
-            var list = _context.EnquiryTypes.ToList();
+            var list = context.EnquiryTypes.ToList();
             return Ok(list);
         }
 
@@ -39,7 +33,7 @@ namespace Doc_Patient_Backend.Controllers
         [HttpGet]
         public ActionResult<List<EnquiryModel>> GetAllEnquiry()
         {
-            var list = _context.EnquiryModels.ToList();
+            var list = context.EnquiryModels.ToList();
             return Ok(list);
         }
 
@@ -47,7 +41,7 @@ namespace Doc_Patient_Backend.Controllers
         [HttpGet("{id}")]
         public ActionResult<EnquiryModel> GetEnquiryById(int id)
         {
-            var enquiry = _context.EnquiryModels.Find(id);
+            var enquiry = context.EnquiryModels.Find(id);
 
             if (enquiry == null)
             {
@@ -67,8 +61,8 @@ namespace Doc_Patient_Backend.Controllers
             }
 
             obj.createdAt = DateTime.Now;
-            _context.EnquiryModels.Add(obj);
-            _context.SaveChanges();
+            context.EnquiryModels.Add(obj);
+            context.SaveChanges();
             return CreatedAtAction(nameof(GetEnquiryById), new { id = obj.enquiryId }, obj);
         }
 
@@ -76,7 +70,7 @@ namespace Doc_Patient_Backend.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdateEnquiry(int id, [FromBody] EnquiryModel obj)
         {
-            var record = _context.EnquiryModels.SingleOrDefault(m => m.enquiryId == id);
+            var record = context.EnquiryModels.SingleOrDefault(m => m.enquiryId == id);
             if (record == null)
             {
                 return NotFound(new { message = "Enquiry not found" });
@@ -84,7 +78,7 @@ namespace Doc_Patient_Backend.Controllers
 
             record.resolution = obj.resolution;
             record.enquiryStatusId = obj.enquiryStatusId;
-            _context.SaveChanges();
+            context.SaveChanges();
 
             return Ok(new { message = "Enquiry updated successfully" });
         }
@@ -93,14 +87,14 @@ namespace Doc_Patient_Backend.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeleteEnquiryById(int id)
         {
-            var record = _context.EnquiryModels.SingleOrDefault(m => m.enquiryId == id);
+            var record = context.EnquiryModels.SingleOrDefault(m => m.enquiryId == id);
             if (record == null)
             {
                 return NotFound(new { message = "Enquiry not found" });
             }
 
-            _context.EnquiryModels.Remove(record);
-            _context.SaveChanges();
+            context.EnquiryModels.Remove(record);
+            context.SaveChanges();
             return Ok(new { message = "Deleted successfully" });
         }
     }
