@@ -11,27 +11,24 @@ namespace Doc_Patient_Backend.Controllers
     [ApiController]
     public class AppointmentController(IAppointmentService appointmentService) : ControllerBase
     {
-        // GET: api/Appointment/GetAllAppointment
-        [HttpGet("GetAllAppointment")]
-        public async Task<IActionResult> GetAllAppointment()
+        // GET: api/Appointment
+        [HttpGet]
+        public async Task<IActionResult> GetAllAppointments()
         {
             var list = await appointmentService.GetAllAppointmentsAsync();
             return Ok(list);
         }
 
-        // GET: api/Appointment/GetDoneAppointment
-        [HttpGet("GetDoneAppointment")]
-        public async Task<IActionResult> GetDoneAppointment()
+        // PATCH: api/Appointment/{id}/status
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> ChangeStatus(int id, [FromBody] string status)
         {
-            var list = await appointmentService.GetDoneAppointmentsAsync();
-            return Ok(list);
-        }
+            if (string.IsNullOrEmpty(status))
+            {
+                return BadRequest("Status cannot be empty.");
+            }
 
-        // PUT: api/Appointment/{appointmentId}/status
-        [HttpPut("{appointmentId}/status")]
-        public async Task<IActionResult> ChangeStatus(int appointmentId, [FromBody] bool isDone)
-        {
-            var result = await appointmentService.ChangeAppointmentStatusAsync(appointmentId, isDone);
+            var result = await appointmentService.ChangeAppointmentStatusAsync(id, status);
             if (!result)
             {
                 return NotFound(new { message = "Appointment not found" });
@@ -39,16 +36,16 @@ namespace Doc_Patient_Backend.Controllers
             return Ok(new { message = "Status Changed Successfully" });
         }
 
-        // POST: api/Appointment/CreateNewAppointment
-        [HttpPost("CreateNewAppointment")]
-        public async Task<IActionResult> CreateNewAppointment([FromBody] NewAppointment obj)
+        // POST: api/Appointment
+        [HttpPost]
+        public async Task<IActionResult> CreateNewAppointment([FromBody] CreateAppointmentDto obj)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
             var createdAppointment = await appointmentService.CreateNewAppointmentAsync(obj);
-            return Created("Appointment Created", createdAppointment);
+            return CreatedAtAction(nameof(GetAllAppointments), new { id = createdAppointment.Id }, createdAppointment);
         }
     }
 }

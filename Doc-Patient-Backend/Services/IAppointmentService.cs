@@ -7,9 +7,8 @@ namespace Doc_Patient_Backend.Services
 {
     public interface IAppointmentService
     {
-        Task<IEnumerable<object>> GetAllAppointmentsAsync();
-        Task<IEnumerable<object>> GetDoneAppointmentsAsync();
-        Task<bool> ChangeAppointmentStatusAsync(int appointmentId, bool isDone);
-        Task<Appointment> CreateNewAppointmentAsync(NewAppointment newAppointment);
+        Task<IEnumerable<AppointmentDto>> GetAllAppointmentsAsync();
+        Task<bool> ChangeAppointmentStatusAsync(int appointmentId, string status);
+        Task<Appointment> CreateNewAppointmentAsync(CreateAppointmentDto createAppointmentDto);
     }
 }
