@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Doc_Patient_Backend.Controllers
 {
-    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.Doctor}")]
+    [Authorize(Roles = "Admin,Doctor")]
     [Route("api/[controller]")]
     [ApiController]
     public class PatientsController(IPatientsService patientsService) : ControllerBase
