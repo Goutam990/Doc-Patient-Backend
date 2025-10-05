@@ -1,3 +1,4 @@
+using Doc_Patient_Backend.Models;
 using Doc_Patient_Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Doc_Patient_Backend.Controllers
 {
-    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.Doctor}")]
+    [Authorize(Roles = "Admin,Doctor")]
     [Route("api/[controller]")]
     [ApiController]
     public class SettingsController(ISettingsService settingsService) : ControllerBase
