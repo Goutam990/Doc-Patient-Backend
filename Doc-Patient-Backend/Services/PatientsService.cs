@@ -10,26 +10,32 @@ namespace Doc_Patient_Backend.Services
     public class PatientsService : IPatientsService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-        public PatientsService(UserManager<ApplicationUser> userManager)
+        public PatientsService(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
             _userManager = userManager;
+            _context = context;
         }
 
         public async Task<(IEnumerable<ApplicationUser> Patients, int TotalCount)> GetPatientsAsync(int page, int pageSize)
         {
-            var query = _userManager.Users.Where(u => u.Role == UserRoles.Patient);
+            var query = from user in _context.Users
+                        join userRole in _context.UserRoles on user.Id equals userRole.UserId
+                        join role in _context.Roles on userRole.RoleId equals role.Id
+                        where role.Name == UserRoles.Patient
+                        select user;
 
-            var totalPatients = await query.CountAsync();
-            var paginatedPatients = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            var totalCount = await query.CountAsync();
+            var patients = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
-            return (paginatedPatients, totalPatients);
+            return (patients, totalCount);
         }
 
         public async Task<ApplicationUser> ToggleBlockPatientAsync(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user == null || user.Role != UserRoles.Patient)
+            if (user == null || !await _userManager.IsInRoleAsync(user, UserRoles.Patient))
             {
                 return null;
             }
