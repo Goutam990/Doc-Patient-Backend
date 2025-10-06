@@ -18,15 +18,15 @@ namespace Doc_Patient_Backend.Models
 
             builder.Entity<Appointment>()
                 .HasOne(a => a.Patient)
-                .WithMany()
+                .WithMany(u => u.AppointmentsAsPatient)
                 .HasForeignKey(a => a.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Appointment>()
                 .HasOne(a => a.Doctor)
-                .WithMany()
+                .WithMany(u => u.AppointmentsAsDoctor)
                 .HasForeignKey(a => a.DoctorId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict); // Can be Restrict now as paths are distinct
         }
     }
 
