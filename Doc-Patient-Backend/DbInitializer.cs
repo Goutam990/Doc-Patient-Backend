@@ -77,5 +77,50 @@ namespace Doc_Patient_Backend
                 Console.WriteLine($"An error occurred while seeding the admin user: {ex.Message}");
             }
         }
+
+        public static async Task SeedDoctorUserAsync(UserManager<ApplicationUser> userManager)
+        {
+            Console.WriteLine("Seeding doctor user...");
+            try
+            {
+                if (await userManager.FindByEmailAsync("doctor@example.com") == null)
+                {
+                    var doctorUser = new ApplicationUser
+                    {
+                        UserName = "doctor@example.com",
+                        Email = "doctor@example.com",
+                        FirstName = "Default",
+                        LastName = "Doctor",
+                        Specialization = "General Medicine",
+                        Experience = 5,
+                        EmailConfirmed = true
+                    };
+
+                    var result = await userManager.CreateAsync(doctorUser, "Doctor@123");
+
+                    if (result.Succeeded)
+                    {
+                        await userManager.AddToRoleAsync(doctorUser, UserRoles.Doctor);
+                        Console.WriteLine("Doctor user created and assigned to Doctor role.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Doctor user creation failed:");
+                        foreach (var error in result.Errors)
+                        {
+                            Console.WriteLine($"- {error.Description}");
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Doctor user already exists.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while seeding the doctor user: {ex.Message}");
+            }
+        }
     }
 }
