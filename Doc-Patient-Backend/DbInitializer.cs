@@ -22,5 +22,27 @@ namespace Doc_Patient_Backend
                 await roleManager.CreateAsync(new IdentityRole(UserRoles.Patient));
             }
         }
+
+        public static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager)
+        {
+            if (await userManager.FindByEmailAsync("admin@example.com") == null)
+            {
+                var adminUser = new ApplicationUser
+                {
+                    UserName = "admin@example.com",
+                    Email = "admin@example.com",
+                    FirstName = "Admin",
+                    LastName = "User",
+                    EmailConfirmed = true
+                };
+
+                var result = await userManager.CreateAsync(adminUser, "Admin@123");
+
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(adminUser, UserRoles.Admin);
+                }
+            }
+        }
     }
 }
