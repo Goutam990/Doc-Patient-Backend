@@ -101,6 +101,7 @@ using (var scope = app.Services.CreateScope())
 
     await DbInitializer.SeedRolesAsync(roleManager);
     await DbInitializer.SeedAdminUserAsync(userManager);
+    await DbInitializer.SeedDoctorUserAsync(userManager);
 }
 
 // Configure HTTP request pipeline
@@ -110,7 +111,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseCors("AllowAngularApp");
 
