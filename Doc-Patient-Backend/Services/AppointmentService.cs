@@ -78,11 +78,11 @@ namespace Doc_Patient_Backend.Services
             return true;
         }
 
-        public async Task<(Appointment, string Error)> CreateNewAppointmentAsync(CreateAppointmentDto createAppointmentDto)
+        public async Task<(Appointment, string Error)> CreateNewAppointmentAsync(CreateAppointmentDto createAppointmentDto, string patientId)
         {
             try
             {
-                var patient = await _userManager.FindByIdAsync(createAppointmentDto.PatientId);
+                var patient = await _userManager.FindByIdAsync(patientId);
                 var doctor = await _userManager.FindByIdAsync(createAppointmentDto.DoctorId);
 
                 if (patient == null) return (null, "Patient not found.");
@@ -96,7 +96,7 @@ namespace Doc_Patient_Backend.Services
 
                 var appointment = new Appointment
                 {
-                    PatientName = createAppointmentDto.PatientName,
+                    PatientName = $"{patient.FirstName} {patient.LastName}", // Use name from authenticated user
                     Age = createAppointmentDto.Age,
                     Gender = createAppointmentDto.Gender,
                     AppointmentDate = appointmentDateTime,
@@ -104,7 +104,7 @@ namespace Doc_Patient_Backend.Services
                     EndTime = appointmentDateTime.AddHours(1),
                     PhoneNumber = createAppointmentDto.PhoneNumber,
                     Address = createAppointmentDto.Address,
-                    PatientId = createAppointmentDto.PatientId,
+                    PatientId = patientId, // Use the secure ID from the token
                     DoctorId = createAppointmentDto.DoctorId,
                     Status = "Scheduled",
                     PaymentStatus = "Pending",
