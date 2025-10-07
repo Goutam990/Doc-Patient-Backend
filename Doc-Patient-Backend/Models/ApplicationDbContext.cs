@@ -46,6 +46,8 @@ namespace Doc_Patient_Backend.Models
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public string Status { get; set; } = "Scheduled"; // e.g., Scheduled, Completed, Canceled
+        public string PaymentStatus { get; set; } = "Pending";
+        public DateTime CreatedAt { get; set; }
 
         // Foreign key to link to the user (patient)
         public string PatientId { get; set; }

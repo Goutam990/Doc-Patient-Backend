@@ -13,6 +13,8 @@ namespace Doc_Patient_Backend.Models.DTOs
         public string PhoneNumber { get; set; }
         public string? Address { get; set; }
         public string Status { get; set; }
+        public string PaymentStatus { get; set; }
+        public DateTime CreatedAt { get; set; }
         public string PatientId { get; set; }
         public string DoctorId { get; set; }
     }
