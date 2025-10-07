@@ -56,7 +56,7 @@ namespace Doc_Patient_Backend.Controllers
                 return BadRequest(ModelState);
             }
             var createdEnquiry = await enquiryService.AddNewEnquiryAsync(obj);
-            return CreatedAtAction(nameof(GetEnquiryById), new { id = createdEnquiry.enquiryId }, createdEnquiry);
+            return CreatedAtAction(nameof(GetEnquiryById), new { id = createdEnquiry.EnquiryId }, createdEnquiry);
         }
 
         // PUT: api/EnquiryMaster/5
