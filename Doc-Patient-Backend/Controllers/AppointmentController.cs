@@ -51,13 +51,7 @@ namespace Doc_Patient_Backend.Controllers
 
             var loggedInPatientId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Security check: A patient can only book an appointment for themselves.
-            if (obj.PatientId != loggedInPatientId)
-            {
-                return Forbid();
-            }
-
-            var (createdAppointment, error) = await appointmentService.CreateNewAppointmentAsync(obj);
+            var (createdAppointment, error) = await appointmentService.CreateNewAppointmentAsync(obj, loggedInPatientId);
 
             if (error != null)
             {
