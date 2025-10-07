@@ -1,7 +1,9 @@
+using Doc_Patient_Backend.Models;
 using Doc_Patient_Backend.Models.DTOs;
 using Doc_Patient_Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Doc_Patient_Backend.Controllers
@@ -21,6 +23,7 @@ namespace Doc_Patient_Backend.Controllers
 
         // PATCH: api/Appointment/{id}/status
         [HttpPatch("{id}/status")]
+        [Authorize(Roles = "Admin,Doctor")] // Only Admin/Doctor can change status
         public async Task<IActionResult> ChangeStatus(int id, [FromBody] string status)
         {
             if (string.IsNullOrEmpty(status))
@@ -36,16 +39,46 @@ namespace Doc_Patient_Backend.Controllers
             return Ok(new { message = "Status Changed Successfully" });
         }
 
-        // POST: api/Appointment
-        [HttpPost]
-        public async Task<IActionResult> CreateNewAppointment([FromBody] CreateAppointmentDto obj)
+        // POST: api/appointments/book
+        [HttpPost("book")]
+        [Authorize(Roles = UserRoles.Patient)]
+        public async Task<IActionResult> BookAppointment([FromBody] CreateAppointmentDto obj)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
+            var loggedInPatientId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Security check: A patient can only book an appointment for themselves.
+            if (obj.PatientId != loggedInPatientId)
+            {
+                return Forbid();
+            }
+
             var createdAppointment = await appointmentService.CreateNewAppointmentAsync(obj);
-            return CreatedAtAction(nameof(GetAllAppointments), new { id = createdAppointment.Id }, createdAppointment);
+            if (createdAppointment == null)
+            {
+                return BadRequest(new { message = "Booking failed. Please check the provided doctor and patient details." });
+            }
+
+            var appointmentDto = new AppointmentDto
+            {
+                Id = createdAppointment.Id,
+                PatientName = createdAppointment.PatientName,
+                Age = createdAppointment.Age,
+                Gender = createdAppointment.Gender,
+                AppointmentDate = createdAppointment.AppointmentDate,
+                AppointmentTime = createdAppointment.AppointmentTime,
+                PhoneNumber = createdAppointment.PhoneNumber,
+                Address = createdAppointment.Address,
+                Status = createdAppointment.Status,
+                PatientId = createdAppointment.PatientId,
+                DoctorId = createdAppointment.DoctorId
+            };
+
+            return CreatedAtAction(nameof(GetAllAppointments), new { id = appointmentDto.Id }, appointmentDto);
         }
     }
 }
