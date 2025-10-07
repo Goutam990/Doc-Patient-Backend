@@ -39,6 +39,28 @@ namespace Doc_Patient_Backend.Services
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<AppointmentDto>> GetUpcomingAppointmentsForPatientAsync(string patientId)
+        {
+            var today = DateTime.UtcNow.Date;
+            return await _context.Appointments
+                .Where(a => a.PatientId == patientId && a.AppointmentDate >= today)
+                .Select(a => new AppointmentDto
+                {
+                    Id = a.Id,
+                    PatientName = a.PatientName,
+                    Age = a.Age,
+                    Gender = a.Gender,
+                    AppointmentDate = a.AppointmentDate,
+                    AppointmentTime = a.AppointmentTime,
+                    PhoneNumber = a.PhoneNumber,
+                    Address = a.Address,
+                    Status = a.Status,
+                    PatientId = a.PatientId,
+                    DoctorId = a.DoctorId
+                })
+                .ToListAsync();
+        }
+
         public async Task<bool> ChangeAppointmentStatusAsync(int appointmentId, string status)
         {
             var appointment = await _context.Appointments.SingleOrDefaultAsync(a => a.Id == appointmentId);
