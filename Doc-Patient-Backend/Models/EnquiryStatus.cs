@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Doc_Patient_Backend.Models
@@ -8,10 +8,10 @@ namespace Doc_Patient_Backend.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int statusId { get; set; }
+        public int StatusId { get; set; }
 
         [Required]
         [MaxLength(50)]
-        public string status { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
     }
 }

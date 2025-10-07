@@ -35,6 +35,8 @@ namespace Doc_Patient_Backend
             }
         }
 
+        // WARNING: This method uses a hardcoded password and is intended for development purposes only.
+        // In a production environment, this should be removed or replaced with a secure mechanism.
         public static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager)
         {
             Console.WriteLine("Seeding admin user...");
@@ -78,6 +80,8 @@ namespace Doc_Patient_Backend
             }
         }
 
+        // WARNING: This method uses a hardcoded password and is intended for development purposes only.
+        // In a production environment, this should be removed or replaced with a secure mechanism.
         public static async Task SeedDoctorUserAsync(UserManager<ApplicationUser> userManager)
         {
             Console.WriteLine("Seeding doctor user...");

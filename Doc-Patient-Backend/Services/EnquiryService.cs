@@ -37,7 +37,7 @@ namespace Doc_Patient_Backend.Services
 
         public async Task<EnquiryModel> AddNewEnquiryAsync(EnquiryModel enquiry)
         {
-            enquiry.createdAt = DateTime.Now;
+            enquiry.CreatedAt = DateTime.Now;
             _context.EnquiryModels.Add(enquiry);
             await _context.SaveChangesAsync();
             return enquiry;
@@ -45,21 +45,21 @@ namespace Doc_Patient_Backend.Services
 
         public async Task<bool> UpdateEnquiryAsync(int id, EnquiryModel enquiry)
         {
-            var record = await _context.EnquiryModels.SingleOrDefaultAsync(m => m.enquiryId == id);
+            var record = await _context.EnquiryModels.SingleOrDefaultAsync(m => m.EnquiryId == id);
             if (record == null)
             {
                 return false;
             }
 
-            record.resolution = enquiry.resolution;
-            record.enquiryStatusId = enquiry.enquiryStatusId;
+            record.Resolution = enquiry.Resolution;
+            record.EnquiryStatusId = enquiry.EnquiryStatusId;
             await _context.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> DeleteEnquiryAsync(int id)
         {
-            var record = await _context.EnquiryModels.SingleOrDefaultAsync(m => m.enquiryId == id);
+            var record = await _context.EnquiryModels.SingleOrDefaultAsync(m => m.EnquiryId == id);
             if (record == null)
             {
                 return false;
