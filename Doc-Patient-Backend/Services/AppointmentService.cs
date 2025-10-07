@@ -33,6 +33,8 @@ namespace Doc_Patient_Backend.Services
                     PhoneNumber = a.PhoneNumber,
                     Address = a.Address,
                     Status = a.Status,
+                    PaymentStatus = a.PaymentStatus,
+                    CreatedAt = a.CreatedAt,
                     PatientId = a.PatientId,
                     DoctorId = a.DoctorId
                 })
@@ -55,6 +57,8 @@ namespace Doc_Patient_Backend.Services
                     PhoneNumber = a.PhoneNumber,
                     Address = a.Address,
                     Status = a.Status,
+                    PaymentStatus = a.PaymentStatus,
+                    CreatedAt = a.CreatedAt,
                     PatientId = a.PatientId,
                     DoctorId = a.DoctorId
                 })
@@ -102,7 +106,9 @@ namespace Doc_Patient_Backend.Services
                     Address = createAppointmentDto.Address,
                     PatientId = createAppointmentDto.PatientId,
                     DoctorId = createAppointmentDto.DoctorId,
-                    Status = "Scheduled"
+                    Status = "Scheduled",
+                    PaymentStatus = "Pending",
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 _context.Appointments.Add(appointment);
