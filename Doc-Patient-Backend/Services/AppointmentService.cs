@@ -74,42 +74,46 @@ namespace Doc_Patient_Backend.Services
             return true;
         }
 
-        public async Task<Appointment> CreateNewAppointmentAsync(CreateAppointmentDto createAppointmentDto)
+        public async Task<(Appointment, string Error)> CreateNewAppointmentAsync(CreateAppointmentDto createAppointmentDto)
         {
-            var patient = await _userManager.FindByIdAsync(createAppointmentDto.PatientId);
-            var doctor = await _userManager.FindByIdAsync(createAppointmentDto.DoctorId);
-
-            if (patient == null || doctor == null)
+            try
             {
-                // Or throw a custom exception
-                return null;
+                var patient = await _userManager.FindByIdAsync(createAppointmentDto.PatientId);
+                var doctor = await _userManager.FindByIdAsync(createAppointmentDto.DoctorId);
+
+                if (patient == null) return (null, "Patient not found.");
+                if (doctor == null) return (null, "Doctor not found.");
+
+                var appointmentDateTime = createAppointmentDto.AppointmentDate.Date;
+                if (TimeSpan.TryParse(createAppointmentDto.AppointmentTime, out var time))
+                {
+                    appointmentDateTime = appointmentDateTime.Add(time);
+                }
+
+                var appointment = new Appointment
+                {
+                    PatientName = createAppointmentDto.PatientName,
+                    Age = createAppointmentDto.Age,
+                    Gender = createAppointmentDto.Gender,
+                    AppointmentDate = appointmentDateTime,
+                    AppointmentTime = createAppointmentDto.AppointmentTime,
+                    EndTime = appointmentDateTime.AddHours(1),
+                    PhoneNumber = createAppointmentDto.PhoneNumber,
+                    Address = createAppointmentDto.Address,
+                    PatientId = createAppointmentDto.PatientId,
+                    DoctorId = createAppointmentDto.DoctorId,
+                    Status = "Scheduled"
+                };
+
+                _context.Appointments.Add(appointment);
+                await _context.SaveChangesAsync();
+                return (appointment, null);
             }
-
-            // Calculate Start and End time
-            var appointmentDateTime = createAppointmentDto.AppointmentDate.Date;
-            if (TimeSpan.TryParse(createAppointmentDto.AppointmentTime, out var time))
+            catch (Exception ex)
             {
-                appointmentDateTime = appointmentDateTime.Add(time);
+                // Log the exception ex
+                return (null, "An unexpected error occurred while booking the appointment.");
             }
-
-            var appointment = new Appointment
-            {
-                PatientName = createAppointmentDto.PatientName,
-                Age = createAppointmentDto.Age,
-                Gender = createAppointmentDto.Gender,
-                AppointmentDate = appointmentDateTime,
-                AppointmentTime = createAppointmentDto.AppointmentTime,
-                EndTime = appointmentDateTime.AddHours(1),
-                PhoneNumber = createAppointmentDto.PhoneNumber,
-                Address = createAppointmentDto.Address,
-                PatientId = createAppointmentDto.PatientId,
-                DoctorId = createAppointmentDto.DoctorId,
-                Status = "Scheduled"
-            };
-
-            _context.Appointments.Add(appointment);
-            await _context.SaveChangesAsync();
-            return appointment;
         }
     }
 }
