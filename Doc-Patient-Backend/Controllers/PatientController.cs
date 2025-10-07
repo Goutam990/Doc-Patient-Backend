@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Doc_Patient_Backend.Controllers
 {
     [Authorize(Roles = UserRoles.Patient)]
-    [Route("api/[controller]")]
+    [Route("api/patient")]
     [ApiController]
     public class PatientController(UserManager<ApplicationUser> userManager, IAppointmentService appointmentService) : ControllerBase
     {

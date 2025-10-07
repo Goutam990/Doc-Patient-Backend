@@ -42,6 +42,7 @@ namespace Doc_Patient_Backend.Models
         public string? Gender { get; set; }
         public DateTime AppointmentDate { get; set; }
         public string AppointmentTime { get; set; }
+        public DateTime EndTime { get; set; }
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public string Status { get; set; } = "Scheduled"; // e.g., Scheduled, Completed, Canceled
