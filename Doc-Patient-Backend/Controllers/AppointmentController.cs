@@ -57,10 +57,11 @@ namespace Doc_Patient_Backend.Controllers
                 return Forbid();
             }
 
-            var createdAppointment = await appointmentService.CreateNewAppointmentAsync(obj);
-            if (createdAppointment == null)
+            var (createdAppointment, error) = await appointmentService.CreateNewAppointmentAsync(obj);
+
+            if (error != null)
             {
-                return BadRequest(new { message = "Booking failed. Please check the provided doctor and patient details." });
+                return BadRequest(new { message = error });
             }
 
             var appointmentDto = new AppointmentDto
