@@ -17,5 +17,8 @@ namespace Doc_Patient_Backend.Models
         public int? Experience { get; set; } // For Doctors
         public string? Gender { get; set; } // For Patients
         public DateTime? DOB { get; set; } // For Patients
+
+        public virtual ICollection<Appointment> AppointmentsAsPatient { get; set; }
+        public virtual ICollection<Appointment> AppointmentsAsDoctor { get; set; }
     }
 }

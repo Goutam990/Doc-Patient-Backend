@@ -16,7 +16,7 @@ namespace Doc_Patient_Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(UserManager<ApplicationUser> userManager, IConfiguration configuration) : ControllerBase
+    public class AuthController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration) : ControllerBase
     {
         [HttpPost]
         [Route("register")]
@@ -39,8 +39,14 @@ namespace Doc_Patient_Backend.Controllers
             };
             var result = await userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+            {
+                return BadRequest(new { Status = "Error", Message = "User creation failed!", Errors = result.Errors });
+            }
 
+            if (!await roleManager.RoleExistsAsync(UserRoles.Patient))
+            {
+                await roleManager.CreateAsync(new IdentityRole(UserRoles.Patient));
+            }
             await userManager.AddToRoleAsync(user, UserRoles.Patient);
 
             var token = GenerateJwtToken(user, new List<string> { UserRoles.Patient });
