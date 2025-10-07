@@ -85,13 +85,21 @@ namespace Doc_Patient_Backend.Services
                 return null;
             }
 
+            // Calculate Start and End time
+            var appointmentDateTime = createAppointmentDto.AppointmentDate.Date;
+            if (TimeSpan.TryParse(createAppointmentDto.AppointmentTime, out var time))
+            {
+                appointmentDateTime = appointmentDateTime.Add(time);
+            }
+
             var appointment = new Appointment
             {
                 PatientName = createAppointmentDto.PatientName,
                 Age = createAppointmentDto.Age,
                 Gender = createAppointmentDto.Gender,
-                AppointmentDate = createAppointmentDto.AppointmentDate,
+                AppointmentDate = appointmentDateTime,
                 AppointmentTime = createAppointmentDto.AppointmentTime,
+                EndTime = appointmentDateTime.AddHours(1),
                 PhoneNumber = createAppointmentDto.PhoneNumber,
                 Address = createAppointmentDto.Address,
                 PatientId = createAppointmentDto.PatientId,
