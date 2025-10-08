@@ -90,6 +90,22 @@ namespace Doc_Patient_Backend.Services
                     return (null, "Appointments can only be booked up to two months in advance.");
                 }
 
+                // Rule: Date must be in the future
+                if (createAppointmentDto.StartTime < DateTime.UtcNow)
+                {
+                    return (null, "Appointment date must be in the future.");
+                }
+
+                // Rule: Patient and Doctor must exist
+                var patient = await _userManager.FindByIdAsync(patientId);
+                if (patient == null) return (null, "Patient not found.");
+
+                var doctor = await _userManager.FindByIdAsync(createAppointmentDto.DoctorId);
+                if (doctor == null || !await _userManager.IsInRoleAsync(doctor, UserRoles.Doctor))
+                {
+                    return (null, "Doctor not found.");
+                }
+
                 // Rule: Check if the slot is actually available
                 var availableSlots = await _settingsService.GetAvailableSlotsAsync(createAppointmentDto.StartTime.Date, createAppointmentDto.DoctorId);
                 if (!availableSlots.Contains(createAppointmentDto.StartTime.ToString("HH:mm")))
@@ -97,8 +113,14 @@ namespace Doc_Patient_Backend.Services
                     return (null, "The selected time slot is not available.");
                 }
 
-                var patient = await _userManager.FindByIdAsync(patientId);
-                if (patient == null) return (null, "Patient not found.");
+                // Rule: Avoid overlapping appointments
+                var existingAppointment = await _context.Appointments
+                    .FirstOrDefaultAsync(a => a.DoctorId == createAppointmentDto.DoctorId && a.StartTime == createAppointmentDto.StartTime);
+
+                if (existingAppointment != null)
+                {
+                    return (null, "An appointment already exists for this doctor at the selected time.");
+                }
 
                 var appointment = new Appointment
                 {
