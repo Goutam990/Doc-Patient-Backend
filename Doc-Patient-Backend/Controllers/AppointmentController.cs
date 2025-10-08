@@ -21,6 +21,15 @@ namespace Doc_Patient_Backend.Controllers
             return Ok(list);
         }
 
+        // GET: api/appointments/patient/{patientId}
+        [HttpGet("patient/{patientId}")]
+        [Authorize(Roles = "Admin,Patient")]
+        public async Task<IActionResult> GetPatientAppointments(string patientId)
+        {
+            var appointments = await appointmentService.GetUpcomingAppointmentsForPatientAsync(patientId);
+            return Ok(appointments);
+        }
+
         // PATCH: api/Appointment/{id}/status
         [HttpPatch("{id}/status")]
         [Authorize(Roles = "Admin,Doctor")] // Only Admin/Doctor can change status
