@@ -26,6 +26,15 @@ namespace Doc_Patient_Backend.Controllers
         [Authorize(Roles = "Admin,Patient")]
         public async Task<IActionResult> GetPatientAppointments(string patientId)
         {
+            var loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole(UserRoles.Admin);
+
+            // A patient can only view their own appointments. An admin can view any patient's appointments.
+            if (!isAdmin && loggedInUserId != patientId)
+            {
+                return Forbid();
+            }
+
             var appointments = await appointmentService.GetUpcomingAppointmentsForPatientAsync(patientId);
             return Ok(appointments);
         }
