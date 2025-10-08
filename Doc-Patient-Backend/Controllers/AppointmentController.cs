@@ -64,8 +64,8 @@ namespace Doc_Patient_Backend.Controllers
                 PatientName = createdAppointment.PatientName,
                 Age = createdAppointment.Age,
                 Gender = createdAppointment.Gender,
-                AppointmentDate = createdAppointment.AppointmentDate,
-                AppointmentTime = createdAppointment.AppointmentTime,
+                StartTime = createdAppointment.StartTime,
+                EndTime = createdAppointment.EndTime,
                 PhoneNumber = createdAppointment.PhoneNumber,
                 Address = createdAppointment.Address,
                 Status = createdAppointment.Status,
@@ -74,6 +74,22 @@ namespace Doc_Patient_Backend.Controllers
             };
 
             return CreatedAtAction(nameof(GetAllAppointments), new { id = appointmentDto.Id }, appointmentDto);
+        }
+
+        // PATCH: api/appointments/{id}/cancel
+        [HttpPatch("{id}/cancel")]
+        [Authorize(Roles = UserRoles.Patient)]
+        public async Task<IActionResult> CancelAppointment(int id)
+        {
+            var patientId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var (success, error) = await appointmentService.CancelAppointmentAsync(id, patientId);
+
+            if (!success)
+            {
+                return BadRequest(new { message = error });
+            }
+
+            return NoContent();
         }
     }
 }

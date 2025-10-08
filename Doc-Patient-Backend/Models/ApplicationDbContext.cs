@@ -11,11 +11,14 @@ namespace Doc_Patient_Backend.Models
         public DbSet<EnquiryModel> EnquiryModels { get; set; }
         public DbSet<EnquiryStatus> EnquiryStatuses { get; set; }
         public DbSet<EnquiryType> EnquiryTypes { get; set; }
+        public DbSet<PatientInfo> PatientInfos { get; set; }
+        public DbSet<DoctorAvailability> DoctorAvailabilities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
+            // Appointment relationships
             builder.Entity<Appointment>()
                 .HasOne(a => a.Patient)
                 .WithMany(u => u.AppointmentsAsPatient)
@@ -26,7 +29,19 @@ namespace Doc_Patient_Backend.Models
                 .HasOne(a => a.Doctor)
                 .WithMany(u => u.AppointmentsAsDoctor)
                 .HasForeignKey(a => a.DoctorId)
-                .OnDelete(DeleteBehavior.Restrict); // Can be Restrict now as paths are distinct
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // PatientInfo one-to-one relationship with ApplicationUser
+            builder.Entity<ApplicationUser>()
+                .HasOne(u => u.PatientInfo)
+                .WithOne(pi => pi.User)
+                .HasForeignKey<PatientInfo>(pi => pi.UserId);
+
+            // DoctorAvailability one-to-many relationship with ApplicationUser
+            builder.Entity<DoctorAvailability>()
+                .HasOne(da => da.Doctor)
+                .WithMany()
+                .HasForeignKey(da => da.DoctorId);
         }
     }
 
@@ -40,14 +55,12 @@ namespace Doc_Patient_Backend.Models
         public string PatientName { get; set; }
         public int? Age { get; set; }
         public string? Gender { get; set; }
-        public DateTime AppointmentDate { get; set; }
-        public string AppointmentTime { get; set; }
+        public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
-        public string Status { get; set; } = "Scheduled"; // e.g., Scheduled, Completed, Canceled
-        public string PaymentStatus { get; set; } = "Pending";
-        public DateTime CreatedAt { get; set; }
+        public string Status { get; set; } = "Pending"; // New status flow: Pending -> Confirmed
+        public string? PaymentIntentId { get; set; }
 
         // Foreign key to link to the user (patient)
         public string PatientId { get; set; }

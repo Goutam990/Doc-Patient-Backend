@@ -5,6 +5,12 @@ namespace Doc_Patient_Backend.Models
 {
     public class ApplicationUser : IdentityUser
     {
+        public ApplicationUser()
+        {
+            AppointmentsAsPatient = new HashSet<Appointment>();
+            AppointmentsAsDoctor = new HashSet<Appointment>();
+        }
+
         [Required]
         public string FirstName { get; set; }
 
@@ -20,5 +26,6 @@ namespace Doc_Patient_Backend.Models
 
         public virtual ICollection<Appointment> AppointmentsAsPatient { get; set; }
         public virtual ICollection<Appointment> AppointmentsAsDoctor { get; set; }
+        public virtual PatientInfo PatientInfo { get; set; }
     }
 }

@@ -18,25 +18,43 @@ namespace Doc_Patient_Backend.Services
 
         public async Task<List<string>> GetAvailableSlotsAsync(DateTime date, string doctorId)
         {
-            // This logic can be expanded in the future to fetch working hours per doctor
-            var workingHoursStart = new TimeSpan(9, 0, 0); // 9 AM
-            var workingHoursEnd = new TimeSpan(17, 0, 0); // 5 PM
-            var slotDuration = TimeSpan.FromMinutes(30);
+            // Check if the doctor is on vacation on the selected date
+            var isVacation = await _context.DoctorAvailabilities
+                .AnyAsync(da => da.DoctorId == doctorId && da.VacationDate.Date == date.Date);
 
-            var appointmentsOnDate = await _context.Appointments
-                .Where(a => a.AppointmentDate.Date == date.Date && a.DoctorId == doctorId)
-                .Select(a => a.AppointmentTime)
+            if (isVacation)
+            {
+                return new List<string>(); // Return an empty list if the doctor is on vacation
+            }
+
+            // Define doctor's working hours and slot duration (can be moved to config or doctor-specific settings later)
+            var workingHoursStart = new TimeSpan(10, 0, 0); // 10 AM
+            var workingHoursEnd = new TimeSpan(18, 0, 0);   // 6 PM
+            var slotDuration = TimeSpan.FromHours(1);
+
+            // Get all existing appointments for the specified doctor on that day
+            var existingAppointments = await _context.Appointments
+                .Where(a => a.DoctorId == doctorId && a.StartTime.Date == date.Date)
+                .Select(a => a.StartTime)
                 .ToListAsync();
 
-            var allSlots = new List<string>();
-            var currentTime = workingHoursStart;
-            while (currentTime < workingHoursEnd)
+            // Generate all possible time slots for the day
+            var allSlots = new List<DateTime>();
+            var currentTime = date.Date.Add(workingHoursStart);
+            var endTime = date.Date.Add(workingHoursEnd);
+
+            while (currentTime < endTime)
             {
-                allSlots.Add(currentTime.ToString(@"hh\:mm"));
+                allSlots.Add(currentTime);
                 currentTime = currentTime.Add(slotDuration);
             }
 
-            var availableSlots = allSlots.Except(appointmentsOnDate).ToList();
+            // Filter out the time slots that are already booked
+            var availableSlots = allSlots
+                .Where(slot => !existingAppointments.Any(booked => booked.TimeOfDay == slot.TimeOfDay))
+                .Select(slot => slot.ToString("HH:mm"))
+                .ToList();
+
             return availableSlots;
         }
     }
