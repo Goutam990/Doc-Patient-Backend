@@ -11,5 +11,6 @@ namespace Doc_Patient_Backend.Services
         Task<IEnumerable<AppointmentDto>> GetUpcomingAppointmentsForPatientAsync(string patientId);
         Task<bool> ChangeAppointmentStatusAsync(int appointmentId, string status);
         Task<(Appointment, string Error)> CreateNewAppointmentAsync(CreateAppointmentDto createAppointmentDto, string patientId);
+        Task<(bool, string Error)> CancelAppointmentAsync(int appointmentId, string patientId);
     }
 }
