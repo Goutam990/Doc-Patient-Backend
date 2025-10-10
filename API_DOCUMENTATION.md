@@ -1,133 +1,210 @@
-# API Documentation: Appointments
+# Patient Appointment Booking System - API Documentation
 
-This document provides details on the API endpoints for managing appointments.
-
----
-
-## 1. Book an Appointment
-
-This endpoint allows a patient to book a new appointment with a doctor.
-
-- **Method:** `POST`
-- **URL:** `/api/appointments/book`
-- **Description:** Creates a new appointment.
-- **Authorization:** Requires an authenticated user with the `Patient` role. The user's JWT token must be included in the `Authorization` header.
-
-### Request Body
-
-The request body must be a JSON object with the following properties:
-
-| Field           | Type    | Description                               | Required |
-| --------------- | ------- | ----------------------------------------- | -------- |
-| `age`           | integer | The age of the patient.                   | No       |
-| `gender`        | string  | The gender of the patient.                | No       |
-| `startTime`     | string  | The start time of the appointment (UTC).  | Yes      |
-| `phoneNumber`   | string  | The patient's phone number.               | Yes      |
-| `address`       | string  | The patient's address.                    | No       |
-| `doctorId`      | string  | The ID of the doctor for the appointment. | Yes      |
-| `paymentIntentId` | string  | The ID of the payment intent from Stripe. | Yes      |
-
-**Example Request:**
-
-```json
-{
-  "age": 30,
-  "gender": "Male",
-  "startTime": "2024-10-27T10:00:00Z",
-  "phoneNumber": "123-456-7890",
-  "address": "123 Main St, Anytown, USA",
-  "doctorId": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6",
-  "paymentIntentId": "pi_1J2b3c4d5e6f7g8h9i0j"
-}
-```
-
-### Success Response
-
-- **Status Code:** `201 Created`
-- **Content:** A JSON object representing the newly created appointment.
-
-**Example Response:**
-
-```json
-{
-  "id": 1,
-  "patientName": "John Doe",
-  "age": 30,
-  "gender": "Male",
-  "startTime": "2024-10-27T10:00:00Z",
-  "endTime": "2024-10-27T11:00:00Z",
-  "phoneNumber": "123-456-7890",
-  "address": "123 Main St, Anytown, USA",
-  "status": "Pending",
-  "patientId": "p1q2r3s4-t5u6-v7w8-x9y0-z1a2b3c4d5e6",
-  "doctorId": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6"
-}
-```
-
-### Error Responses
-
-- **Status Code:** `400 Bad Request`
-  - **Reason:** Validation failed (e.g., missing required fields, invalid date format, date in the past, doctor not found, slot not available, overlapping appointments).
-  - **Response Body:**
-    ```json
-    {
-      "message": "Error message describing the issue."
-    }
-    ```
-- **Status Code:** `401 Unauthorized`
-  - **Reason:** The user is not authenticated.
-- **Status Code:** `403 Forbidden`
-  - **Reason:** The user does not have the `Patient` role.
-- **Status Code:** `500 Internal Server Error`
-  - **Reason:** An unexpected error occurred on the server.
+This document provides a complete reference for the backend API of the Patient Appointment Booking System.
 
 ---
 
-## 2. Get Upcoming Appointments for a Patient
+## 1. Authentication (`/api/auth`)
 
-This endpoint retrieves a list of all upcoming appointments for a specific patient.
+These endpoints handle patient registration and login.
 
-- **Method:** `GET`
-- **URL:** `/api/appointments/patient/{patientId}`
-- **Description:** Retrieves all upcoming appointments for the specified patient.
-- **Authorization:** Requires an authenticated user with either the `Admin` or `Patient` role.
+### Register a New Patient
 
-### URL Parameters
+-   **Endpoint:** `POST /api/auth/register`
+-   **Description:** Creates a new `AspNetUser` and an associated `PatientInfo` record.
+-   **Authorization:** Public.
 
-| Parameter   | Type   | Description                       | Required |
-| ----------- | ------ | --------------------------------- | -------- |
-| `patientId` | string | The ID of the patient.            | Yes      |
-
-### Success Response
-
-- **Status Code:** `200 OK`
-- **Content:** A JSON array of appointment objects.
-
-**Example Response:**
+**Request Body (`RegisterDto`):**
 
 ```json
-[
-  {
-    "id": 1,
-    "patientName": "John Doe",
-    "age": 30,
-    "gender": "Male",
-    "startTime": "2024-10-27T10:00:00Z",
-    "endTime": "2024-10-27T11:00:00Z",
-    "phoneNumber": "123-456-7890",
-    "address": "123 Main St, Anytown, USA",
-    "status": "Pending",
-    "patientId": "p1q2r3s4-t5u6-v7w8-x9y0-z1a2b3c4d5e6",
-    "doctorId": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6"
-  }
-]
+{
+  "email": "patient@example.com",
+  "password": "Password@123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "dateOfBirth": "1990-01-15T00:00:00Z",
+  "gender": "Male",
+  "countryCode": "+91",
+  "phoneNumber": "9876543210",
+  "illnessHistory": "None",
+  "picture": "http://example.com/profile.jpg"
+}
 ```
 
-### Error Responses
+**Success Response (200 OK):**
 
-- **Status Code:** `401 Unauthorized`
-  - **Reason:** The user is not authenticated.
-- **Status Code:** `403 Forbidden`
-  - **Reason:** The user does not have the `Admin` or `Patient` role.
-- **Status Code:** `500 Internal Server Error`
-  - **Reason:** An unexpected error occurred on the server.
+```json
+{
+  "message": "User registered successfully."
+}
+```
+
+**Error Response (400 Bad Request):**
+
+```json
+{
+  "message": "An account with this email already exists."
+}
+```
+
+### Login
+
+-   **Endpoint:** `POST /api/auth/login`
+-   **Description:** Authenticates a user (Patient or Doctor) and returns a JWT.
+-   **Authorization:** Public.
+
+**Request Body (`LoginDto`):**
+
+```json
+{
+  "email": "patient@example.com",
+  "password": "Password@123"
+}
+```
+
+**Success Response (200 OK):**
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Error Response (401 Unauthorized):**
+
+```json
+{
+  "message": "Invalid email or password."
+}
+```
+
+---
+
+## 2. Doctor APIs (`/api/doctor`)
+
+These endpoints are for the Doctor role only.
+
+-   **Authorization:** Requires `Doctor` role JWT.
+
+### Get All Patients
+
+-   **Endpoint:** `GET /api/doctor/patients`
+-   **Description:** Retrieves a list of all registered patients' details.
+
+**Success Response (200 OK):**
+Returns an array of `PatientDetailsDto`.
+
+### Get Patient Details
+
+-   **Endpoint:** `GET /api/doctor/patients/{id}`
+-   **Description:** Retrieves the details for a single patient by their `PatientInfo` ID.
+
+**Success Response (200 OK):**
+Returns a single `PatientDetailsDto`.
+
+### Get Upcoming Appointments
+
+-   **Endpoint:** `GET /api/doctor/appointments/upcoming`
+-   **Description:** Gets a list of all pending and confirmed appointments.
+
+**Success Response (200 OK):**
+Returns an array of `AppointmentDto`.
+
+### Update Availability
+
+-   **Endpoint:** `POST /api/doctor/availability`
+-   **Description:** Sets or updates the doctor's working hours. Triggers auto-cancellation of appointments outside the new hours.
+
+**Request Body (`UpdateAvailabilityDto`):**
+
+```json
+{
+  "startTime": "2025-11-01T09:00:00Z",
+  "endTime": "2025-11-01T17:00:00Z"
+}
+```
+
+### Approve/Reject/Revisit an Appointment
+
+-   **Approve:** `POST /api/doctor/appointments/{id}/approve`
+-   **Reject:** `POST /api/doctor/appointments/{id}/reject`
+-   **Schedule Revisit:** `POST /api/doctor/appointments/{id}/revisit`
+-   **Description:** Performs management actions on a specific appointment.
+
+---
+
+## 3. Patient APIs (`/api/patient`)
+
+These endpoints are for the Patient role only.
+
+-   **Authorization:** Requires `Patient` role JWT. The patient's user ID is automatically retrieved from the token.
+
+### Get Patient's Appointments
+
+-   **Upcoming:** `GET /api/patient/appointments/upcoming`
+-   **Completed:** `GET /api/patient/appointments/completed`
+-   **All:** `GET /api/patient/appointments/all`
+-   **Description:** Retrieves lists of the authenticated patient's appointments based on status.
+
+**Success Response (200 OK):**
+Returns an array of `AppointmentDto`.
+
+### Book a New Appointment
+
+-   **Endpoint:** `POST /api/patient/appointments`
+-   **Description:** Books a new appointment. Fails if the patient already has an active (Pending/Confirmed) appointment.
+
+**Request Body (`CreateAppointmentDto`):**
+
+```json
+{
+  "startTime": "2025-11-01T10:00:00Z"
+}
+```
+
+**Success Response (201 Created):**
+Returns the created `AppointmentDto`.
+
+### Edit (Reschedule) an Appointment
+
+-   **Endpoint:** `PUT /api/patient/appointments/{id}`
+-   **Description:** Allows a patient to change the time of their own appointment before the scheduled time.
+
+**Request Body (`UpdateAppointmentDto`):**
+
+```json
+{
+  "startTime": "2025-11-01T11:00:00Z"
+}
+```
+
+### Cancel an Appointment
+
+-   **Endpoint:** `POST /api/patient/appointments/{id}/cancel`
+-   **Description:** Allows a patient to cancel their own pending or confirmed appointment.
+
+---
+
+## 4. Payment APIs (`/api/payments`)
+
+### Create Payment Intent
+
+-   **Endpoint:** `POST /api/payments/create-intent/{appointmentId}`
+-   **Description:** Initializes a Stripe payment intent for a given appointment.
+-   **Authorization:** Requires `Patient` role JWT.
+
+**Success Response (200 OK):**
+
+```json
+{
+  "clientSecret": "pi_...",
+  "paymentIntentId": "pi_..."
+}
+```
+
+---
+
+## 5. Stripe Webhook (`/api/stripe-webhook`)
+
+-   **Endpoint:** `POST /api/stripe-webhook`
+-   **Description:** A public endpoint to receive webhook events from Stripe (e.g., `payment_intent.succeeded`). This endpoint has no authorization.
