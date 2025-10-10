@@ -2,6 +2,7 @@ using Doc_Patient_Backend.Models.DTOs;
 using Doc_Patient_Backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Doc_Patient_Backend.Controllers
 {
@@ -52,6 +53,23 @@ namespace Doc_Patient_Backend.Controllers
             }
 
             return Unauthorized(new { Message = errorMessage });
+        }
+        
+        // GET: api/auth/me
+        [HttpGet("me")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public IActionResult Me()
+        {
+            var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            var id = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            var roles = new List<string>();
+            foreach (var claim in User.FindAll(System.Security.Claims.ClaimTypes.Role))
+            {
+                roles.Add(claim.Value);
+            }
+
+            return Ok(new { id, email, roles });
         }
     }
 }

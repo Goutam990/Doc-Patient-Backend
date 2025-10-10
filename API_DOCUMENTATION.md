@@ -80,6 +80,27 @@ These endpoints handle patient registration and login.
 
 ---
 
+### Get Current User
+
+-   **Endpoint:** `GET /api/auth/me`
+-   **Description:** Returns the authenticated user's basic information (id, email, roles) derived from the JWT claims. Useful for frontend to bootstrap user state after login or page reload.
+-   **Authorization:** Requires Bearer JWT in `Authorization` header.
+
+**Success Response (200 OK):**
+
+```json
+{
+  "id": "user-id-guid",
+  "email": "user@example.com",
+  "roles": ["Patient"]
+}
+```
+
+**Notes for Frontend**
+
+- Set `VITE_API_URL` in the frontend `.env` (or use `.env.local`) to point to the backend, e.g. `http://localhost:5000` or `https://localhost:7241` depending on your launch settings.
+- The frontend `src/services/api.js` automatically attaches token from `localStorage` to requests.
+
 ## 2. Doctor APIs (`/api/doctor`)
 
 These endpoints are for the Doctor role only.

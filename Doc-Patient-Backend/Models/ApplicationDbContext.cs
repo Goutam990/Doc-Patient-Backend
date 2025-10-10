@@ -19,7 +19,7 @@ namespace Doc_Patient_Backend.Models
             // Configure PatientInfo one-to-one relationship with ApplicationUser
             builder.Entity<PatientInfo>()
                 .HasOne(pi => pi.User)
-                .WithOne() // A user can have one patient info record
+                .WithOne(u => u.PatientInfo) // A user can have one patient info record (explicit inverse)
                 .HasForeignKey<PatientInfo>(pi => pi.UserId);
 
             // Configure unique constraint on PhoneNumber in PatientInfo
