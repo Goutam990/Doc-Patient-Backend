@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Doc_Patient_Backend.Models.DTOs
 {
-    public class CreateAppointmentDto
+    public class UpdateAppointmentDto
     {
         [Required]
         public DateTime StartTime { get; set; }

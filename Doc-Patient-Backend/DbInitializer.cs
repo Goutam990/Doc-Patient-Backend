@@ -12,11 +12,7 @@ namespace Doc_Patient_Backend
             Console.WriteLine("Seeding roles...");
             try
             {
-                if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
-                {
-                    await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
-                    Console.WriteLine("Admin role created.");
-                }
+                // Ensure the core roles exist
                 if (!await roleManager.RoleExistsAsync(UserRoles.Doctor))
                 {
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Doctor));
@@ -36,76 +32,29 @@ namespace Doc_Patient_Backend
         }
 
         // WARNING: This method uses a hardcoded password and is intended for development purposes only.
-        // In a production environment, this should be removed or replaced with a secure mechanism.
-        public static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager)
-        {
-            Console.WriteLine("Seeding admin user...");
-            try
-            {
-                if (await userManager.FindByEmailAsync("admin@example.com") == null)
-                {
-                    var adminUser = new ApplicationUser
-                    {
-                        UserName = "admin@example.com",
-                        Email = "admin@example.com",
-                        FirstName = "Admin",
-                        LastName = "User",
-                        EmailConfirmed = true
-                    };
-
-                    var result = await userManager.CreateAsync(adminUser, "Admin@123");
-
-                    if (result.Succeeded)
-                    {
-                        await userManager.AddToRoleAsync(adminUser, UserRoles.Admin);
-                        Console.WriteLine("Admin user created and assigned to Admin role.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Admin user creation failed:");
-                        foreach (var error in result.Errors)
-                        {
-                            Console.WriteLine($"- {error.Description}");
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Admin user already exists.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred while seeding the admin user: {ex.Message}");
-            }
-        }
-
-        // WARNING: This method uses a hardcoded password and is intended for development purposes only.
-        // In a production environment, this should be removed or replaced with a secure mechanism.
         public static async Task SeedDoctorUserAsync(UserManager<ApplicationUser> userManager)
         {
             Console.WriteLine("Seeding doctor user...");
             try
             {
-                if (await userManager.FindByEmailAsync("doctor@example.com") == null)
+                if (await userManager.FindByEmailAsync("doctor@demo.com") == null)
                 {
                     var doctorUser = new ApplicationUser
                     {
-                        UserName = "doctor@example.com",
-                        Email = "doctor@example.com",
-                        FirstName = "Default",
+                        UserName = "doctor@demo.com",
+                        Email = "doctor@demo.com",
+                        FirstName = "Demo",
                         LastName = "Doctor",
-                        Specialization = "General Medicine",
-                        Experience = 5,
                         EmailConfirmed = true
                     };
 
-                    var result = await userManager.CreateAsync(doctorUser, "Doctor@123");
+                    // Use the password specified in the requirements
+                    var result = await userManager.CreateAsync(doctorUser, "Admin@12345");
 
                     if (result.Succeeded)
                     {
                         await userManager.AddToRoleAsync(doctorUser, UserRoles.Doctor);
-                        Console.WriteLine("Doctor user created and assigned to Doctor role.");
+                        Console.WriteLine("Doctor user (doctor@demo.com) created and assigned to Doctor role.");
                     }
                     else
                     {
@@ -118,7 +67,7 @@ namespace Doc_Patient_Backend
                 }
                 else
                 {
-                    Console.WriteLine("Doctor user already exists.");
+                    Console.WriteLine("Doctor user (doctor@demo.com) already exists.");
                 }
             }
             catch (Exception ex)

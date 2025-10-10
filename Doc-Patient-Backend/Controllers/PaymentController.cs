@@ -5,27 +5,30 @@ using System.Threading.Tasks;
 
 namespace Doc_Patient_Backend.Controllers
 {
-    [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/payments")]
     [ApiController]
-    public class PaymentController(IPaymentService paymentService) : ControllerBase
+    [Authorize(Roles = "Patient")]
+    public class PaymentController : ControllerBase
     {
-        // POST: api/payment/create-payment-intent
-        [HttpPost("create-payment-intent")]
-        public async Task<IActionResult> CreatePaymentIntent()
+        private readonly IPaymentService _paymentService;
+
+        public PaymentController(IPaymentService paymentService)
         {
-            // Amount is fixed at 500 INR
-            // Stripe expects the amount in the smallest currency unit (e.g., cents, paise)
-            long amountInPaise = 500 * 100;
+            _paymentService = paymentService;
+        }
 
-            var paymentIntent = await paymentService.CreatePaymentIntentAsync(amountInPaise, "inr");
+        // POST: api/payments/create-intent/{appointmentId}
+        [HttpPost("create-intent/{appointmentId}")]
+        public async Task<IActionResult> CreatePaymentIntent(int appointmentId)
+        {
+            var (clientSecret, paymentIntentId, errorMessage) = await _paymentService.CreatePaymentIntentAsync(appointmentId);
 
-            if (paymentIntent == null)
+            if (errorMessage != null)
             {
-                return BadRequest(new { message = "Failed to create payment intent." });
+                return BadRequest(new { Message = errorMessage });
             }
 
-            return Ok(new { clientSecret = paymentIntent.ClientSecret });
+            return Ok(new { ClientSecret = clientSecret, PaymentIntentId = paymentIntentId });
         }
     }
 }

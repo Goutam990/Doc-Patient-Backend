@@ -1,5 +1,4 @@
-﻿using Doc_Patient_Backend.Models;
-using Doc_Patient_Backend.Services;
+using Doc_Patient_Backend.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +6,6 @@ using Microsoft.IdentityModel.Tokens;
 using Doc_Patient_Backend;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Swashbuckle.AspNetCore.Swagger;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Swashbuckle.AspNetCore.SwaggerUI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,12 +40,11 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Add custom services
-builder.Services.AddScoped<IAppointmentService, AppointmentService>();
-builder.Services.AddScoped<IEnquiryService, EnquiryService>();
-builder.Services.AddScoped<IPatientsService, PatientsService>();
-builder.Services.AddScoped<ISettingsService, SettingsService>();
-builder.Services.AddScoped<IDoctorAvailabilityService, DoctorAvailabilityService>();
-builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<Doc_Patient_Backend.Services.IAuthService, Doc_Patient_Backend.Services.AuthService>();
+builder.Services.AddScoped<Doc_Patient_Backend.Services.IDoctorService, Doc_Patient_Backend.Services.DoctorService>();
+builder.Services.AddScoped<Doc_Patient_Backend.Services.IPatientService, Doc_Patient_Backend.Services.PatientService>();
+builder.Services.AddScoped<Doc_Patient_Backend.Services.IPaymentService, Doc_Patient_Backend.Services.PaymentService>();
+
 
 // CORS - Allow frontend (Angular/React)
 builder.Services.AddCors(options =>
@@ -70,12 +65,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Simplified password requirements for development
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 6;
+    // Password requirements to match seeded doctor password "Admin@12345"
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 8;
 })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -103,14 +98,13 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// Seed roles
+// Seed roles and default user
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
     await DbInitializer.SeedRolesAsync(roleManager);
-    await DbInitializer.SeedAdminUserAsync(userManager);
     await DbInitializer.SeedDoctorUserAsync(userManager);
 }
 

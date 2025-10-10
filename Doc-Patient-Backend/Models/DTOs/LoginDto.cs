@@ -4,11 +4,11 @@ namespace Doc_Patient_Backend.Models.DTOs
 {
     public class LoginDto
     {
-        [Required(ErrorMessage = "Email is required")]
+        [Required]
         [EmailAddress]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Password is required")]
+        [Required]
         public string Password { get; set; }
     }
 }

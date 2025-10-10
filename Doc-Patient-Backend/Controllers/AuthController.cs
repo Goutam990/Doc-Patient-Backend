@@ -1,129 +1,57 @@
-using Doc_Patient_Backend.Models;
 using Doc_Patient_Backend.Models.DTOs;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+using Doc_Patient_Backend.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Doc_Patient_Backend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
-    public class AuthController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration) : ControllerBase
+    public class AuthController : ControllerBase
     {
-        [HttpPost]
-        [Route("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto model)
+        private readonly IAuthService _authService;
+
+        public AuthController(IAuthService authService)
         {
-            var userExists = await userManager.FindByEmailAsync(model.Email);
-            if (userExists != null)
-                return StatusCode(StatusCodes.Status409Conflict, new { Status = "Error", Message = "User with this email already exists." });
-
-            ApplicationUser user = new()
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                UserName = model.Email,
-                PhoneNumber = model.PhoneNumber,
-                DOB = model.DOB,
-                Gender = model.Gender,
-                SecurityStamp = Guid.NewGuid().ToString()
-            };
-            var result = await userManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
-            {
-                return BadRequest(new { Status = "Error", Message = "User creation failed!", Errors = result.Errors });
-            }
-
-            if (!await roleManager.RoleExistsAsync(UserRoles.Patient))
-            {
-                await roleManager.CreateAsync(new IdentityRole(UserRoles.Patient));
-            }
-            await userManager.AddToRoleAsync(user, UserRoles.Patient);
-
-            var token = GenerateJwtToken(user, new List<string> { UserRoles.Patient });
-            var userDto = new UserDto { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName, Email = user.Email, Role = UserRoles.Patient };
-
-            return Ok(new LoginResponseDto { Token = token, User = userDto });
+            _authService = authService;
         }
 
-        [HttpPost]
-        [Route("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto model)
+        // POST: api/auth/register
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            var user = await userManager.FindByEmailAsync(model.Email);
-            if (user != null && await userManager.CheckPasswordAsync(user, model.Password))
+            if (!ModelState.IsValid)
             {
-                if (user.IsBlocked)
-                {
-                    return Unauthorized(new { message = "User is blocked." });
-                }
-
-                var userRoles = await userManager.GetRolesAsync(user);
-                var token = GenerateJwtToken(user, (List<string>)userRoles);
-                var userDto = new UserDto { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName, Email = user.Email, Role = userRoles.FirstOrDefault() };
-
-                return Ok(new LoginResponseDto { Token = token, User = userDto });
+                return BadRequest(ModelState);
             }
-            return Unauthorized();
+
+            var (succeeded, errorMessage) = await _authService.RegisterAsync(registerDto);
+
+            if (succeeded)
+            {
+                return Ok(new { Message = "User registered successfully." });
+            }
+
+            return BadRequest(new { Message = errorMessage });
         }
 
-        [Authorize]
-        [HttpGet("me")]
-        public async Task<IActionResult> GetCurrentUser()
+        // POST: api/auth/login
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            var user = await userManager.FindByEmailAsync(userEmail);
-            if (user == null)
+            if (!ModelState.IsValid)
             {
-                return NotFound("User not found.");
-            }
-            return Ok(new
-            {
-                user.Id,
-                user.FirstName,
-                user.LastName,
-                user.Email,
-                user.PhoneNumber,
-                user.DOB,
-                user.Gender,
-                Role = (await userManager.GetRolesAsync(user)).FirstOrDefault()
-            });
-        }
-
-        private string GenerateJwtToken(ApplicationUser user, List<string> roles)
-        {
-            var authClaims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, user.Id),
-                new(ClaimTypes.Email, user.Email),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            };
-
-            foreach (var userRole in roles)
-            {
-                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                return BadRequest(ModelState);
             }
 
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"]));
+            var (token, errorMessage) = await _authService.LoginAsync(loginDto);
 
-            var token = new JwtSecurityToken(
-                issuer: configuration["JWT:Issuer"],
-                audience: configuration["JWT:Audience"],
-                expires: DateTime.Now.AddHours(3),
-                claims: authClaims,
-                signingCredentials: new(authSigningKey, SecurityAlgorithms.HmacSha256)
-            );
+            if (token != null)
+            {
+                return Ok(new LoginResponseDto { Token = token });
+            }
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return Unauthorized(new { Message = errorMessage });
         }
     }
 }

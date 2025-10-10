@@ -5,12 +5,7 @@ namespace Doc_Patient_Backend.Models.DTOs
 {
     public class RegisterDto
     {
-        [Required]
-        public string FirstName { get; set; }
-
-        [Required]
-        public string LastName { get; set; }
-
+        // User Info
         [Required]
         [EmailAddress]
         public string Email { get; set; }
@@ -18,8 +13,29 @@ namespace Doc_Patient_Backend.Models.DTOs
         [Required]
         public string Password { get; set; }
 
+        // Patient Info
+        [Required]
+        [StringLength(50)]
+        public string FirstName { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string LastName { get; set; }
+
+        public DateTime DateOfBirth { get; set; }
+
+        [StringLength(10)]
+        public string Gender { get; set; }
+
+        [StringLength(5)]
+        public string CountryCode { get; set; }
+
+        [Required]
+        [StringLength(10)]
         public string PhoneNumber { get; set; }
-        public DateTime? DOB { get; set; }
-        public string? Gender { get; set; }
+
+        public string IllnessHistory { get; set; }
+
+        public string Picture { get; set; } // URL
     }
 }

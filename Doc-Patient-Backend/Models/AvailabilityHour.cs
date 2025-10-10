@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Doc_Patient_Backend.Models
 {
-    public class DoctorAvailability
+    public class AvailabilityHour
     {
         [Key]
         public int Id { get; set; }
@@ -15,8 +15,12 @@ namespace Doc_Patient_Backend.Models
         public virtual ApplicationUser Doctor { get; set; }
 
         [Required]
-        public DateTime VacationDate { get; set; }
+        public DateTime StartTime { get; set; }
 
-        public string? Reason { get; set; } // Optional reason for unavailability
+        [Required]
+        public DateTime EndTime { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
 }
